@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate Authority & CRL - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Certificate Authority & Revocation List (CRL)</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Manage X.509 certificates and revoke compromised keys</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-xs text-teal-600 dark:text-teal-400 hover:underline">
+            &larr; Back to Admin Dashboard
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden text-sm">
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-semibold uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3 text-left">Serial Number</th>
+                    <th class="px-6 py-3 text-left">Entity Type</th>
+                    <th class="px-6 py-3 text-left">Entity ID</th>
+                    <th class="px-6 py-3 text-left">Issued (UTC)</th>
+                    <th class="px-6 py-3 text-left">Status</th>
+                    <th class="px-6 py-3 text-right">CRL Revocation Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                {% for c in certs %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-750">
+                        <td class="px-6 py-4 font-mono text-xs text-slate-700 dark:text-slate-300 font-semibold">
+                            {{ c.serial_number }}
+                        </td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            {{ c.subject_type }}
+                        </td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            {{ c.user_id or c.department_id }}
+                        </td>
+                        <td class="px-6 py-4 text-slate-500 text-xs">
+                            {{ c.issued_at.strftime('%Y-%m-%d %H:%M') }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if c.is_revoked %}
+                                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-1 rounded-full font-bold">
+                                    REVOKED (CRL)
+                                </span>
+                            {% else %}
+                                <span class="bg-teal-100 text-teal-800 text-xs px-2.5 py-1 rounded-full font-bold">
+                                    ACTIVE & TRUSTED
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if not c.is_revoked %}
+                                <form method="POST" action="{{ url_for('admin.revoke_certificate', cert_id=c.id) }}" onsubmit="return confirm('Confirm revocation of certificate serial {{ c.serial_number }}? All future signatures will be rejected.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="text-xs bg-red-50 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 transition cursor-pointer">
+                                        Revoke Key
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-xs text-slate-400 italic">Revoked on {{ c.revoked_at.strftime('%Y-%m-%d') if c.revoked_at else '' }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

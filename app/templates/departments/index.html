@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Departments - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Hospital Departments</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Data-driven clinical units with dedicated public key certificates</p>
+        </div>
+        <div class="space-x-3">
+            {% if current_user.role == 'Admin' %}
+                <a href="{{ url_for('departments.create') }}" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow text-sm transition">
+                    + Add New Department
+                </a>
+                <a href="{{ url_for('departments.matrix') }}" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium py-2 px-4 rounded-lg text-sm transition">
+                    Access Matrix
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for dept in departments %}
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300 font-mono text-xs px-2.5 py-1 rounded-full font-bold">
+                            {{ dept.code }}
+                        </span>
+                        {% if dept.is_active %}
+                            <span class="text-xs text-teal-600 font-semibold">Active</span>
+                        {% else %}
+                            <span class="text-xs text-red-500 font-semibold">Disabled</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ dept.name }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ dept.description or 'Hospital Clinical Specialty Unit' }}</p>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 space-y-1">
+                    <p><strong>Department Head:</strong> {{ dept.head.full_name if dept.head else 'Not Assigned' }}</p>
+                    <p><strong>Key Algorithm:</strong> RSA-2048</p>
+                    <p><strong>Report Types:</strong> {{ dept.report_types|length }} registered</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

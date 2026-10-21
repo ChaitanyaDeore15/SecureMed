@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Security & System Administration - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Hospital Administration & Security Center</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Cryptographic authority, telemetry metrics, and certificate management</p>
+        </div>
+        <div class="space-x-3">
+            <a href="{{ url_for('admin.export_audit_csv') }}" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium py-2 px-4 rounded-lg text-sm transition">
+                📥 Export Audit Ledger (CSV)
+            </a>
+            <a href="{{ url_for('admin.certificates') }}" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow text-sm transition">
+                📜 Manage Certificates & CRL
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase">Registered Users</span>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ total_users }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase">Clinical Departments</span>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ total_departments }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span class="text-xs font-semibold text-teal-600 uppercase">Verified Reports</span>
+            <p class="text-2xl font-bold text-teal-600 mt-1">{{ verified_count }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span class="text-xs font-semibold text-red-500 uppercase">Tampered / Rejected</span>
+            <p class="text-2xl font-bold text-red-500 mt-1">{{ tampered_count }}</p>
+        </div>
+    </div>
+
+    <!-- Telemetry Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Certificates -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Active Root CA-Issued Certificates</h3>
+            <div class="space-y-3 text-xs">
+                {% for cert in recent_certs %}
+                    <div class="flex justify-between items-center p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                        <div>
+                            <span class="font-mono text-slate-700 dark:text-slate-300 font-semibold">{{ cert.serial_number[:16] }}...</span>
+                            <span class="block text-slate-400 text-2xs">{{ cert.subject_type }} &bull; Issued: {{ cert.issued_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <div>
+                            {% if cert.is_revoked %}
+                                <span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-2xs font-bold">REVOKED</span>
+                            {% else %}
+                                <span class="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-2xs font-bold">VALID</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- System Baseline Status -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Cryptographic Policy Status</h3>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700">
+                    <span class="text-slate-600 dark:text-slate-300">Asymmetric Key Standard</span>
+                    <span class="font-semibold text-slate-900 dark:text-white">RSA-PSS 2048-bit (SHA-256)</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700">
+                    <span class="text-slate-600 dark:text-slate-300">Symmetric Cipher Suite</span>
+                    <span class="font-semibold text-slate-900 dark:text-white">AES-256-GCM (96-bit nonce)</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700">
+                    <span class="text-slate-600 dark:text-slate-300">Key Encapsulation Mechanism</span>
+                    <span class="font-semibold text-slate-900 dark:text-white">RSA-OAEP (MGF1-SHA-256)</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700">
+                    <span class="text-slate-600 dark:text-slate-300">Audit Ledger Integrity</span>
+                    <span class="font-semibold text-teal-600">SHA-256 Hash Chaining Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

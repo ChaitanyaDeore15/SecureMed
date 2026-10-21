@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Add Department - SecureMed{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-6">
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Create New Hospital Department</h2>
+        <p class="text-xs text-slate-500 mb-6">Automatically generates dedicated RSA-2048 keypair and Root CA-signed X.509 certificate.</p>
+
+        <form method="POST" class="space-y-4">
+            {{ form.hidden_tag() }}
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {{ form.name.label }}
+                </label>
+                {{ form.name(class="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 text-sm", placeholder="e.g. Neurology & Neurosurgery") }}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {{ form.code.label }}
+                </label>
+                {{ form.code(class="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 text-sm", placeholder="e.g. NEURO") }}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {{ form.head_id.label }}
+                </label>
+                {{ form.head_id(class="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 text-sm") }}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {{ form.description.label }}
+                </label>
+                {{ form.description(class="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 text-sm", rows=3) }}
+            </div>
+
+            <div class="flex items-center space-x-2 pt-2">
+                {{ form.is_active(class="h-4 w-4 text-teal-600 rounded") }}
+                <label class="text-xs text-slate-700 dark:text-slate-300">{{ form.is_active.label.text }}</label>
+            </div>
+
+            <div class="pt-4">
+                {{ form.submit(class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 px-4 rounded-lg shadow text-sm cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

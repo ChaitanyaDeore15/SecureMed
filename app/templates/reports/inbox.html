@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Inbox - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Secure Clinical Inbox</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Encrypted incoming patient reports and departmental orders</p>
+        </div>
+        <div class="space-x-3">
+            <a href="{{ url_for('reports.compose') }}" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow text-sm transition">
+                + Compose Secure Report
+            </a>
+            <a href="{{ url_for('reports.outbox') }}" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium py-2 px-4 rounded-lg text-sm transition">
+                Outbox
+            </a>
+        </div>
+    </div>
+
+    <!-- Inbox Table -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3 text-left">Report Title</th>
+                    <th class="px-6 py-3 text-left">Patient MRN</th>
+                    <th class="px-6 py-3 text-left">Sender</th>
+                    <th class="px-6 py-3 text-left">Originating Dept</th>
+                    <th class="px-6 py-3 text-left">Crypto Status</th>
+                    <th class="px-6 py-3 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                {% for entry in recipient_entries %}
+                    {% set rpt = entry.report_version.report %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-750 transition">
+                        <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                            {{ rpt.title }}
+                            {% if rpt.is_critical %}
+                                <span class="ml-2 bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-bold">CRITICAL</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300 font-mono text-xs">
+                            {{ rpt.patient.mrn }} ({{ rpt.patient.full_name }})
+                        </td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            {{ rpt.author.full_name if rpt.author else 'System' }}
+                        </td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            {{ rpt.department.name }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if entry.verification_status == 'VERIFIED' %}
+                                <span class="bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300 font-semibold px-2.5 py-1 rounded-full text-xs">
+                                    ✓ Verified
+                                </span>
+                            {% elif entry.verification_status == 'TAMPERED' %}
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300 font-semibold px-2.5 py-1 rounded-full text-xs">
+                                    ✗ Tampered
+                                </span>
+                            {% elif entry.verification_status == 'REPLAY' %}
+                                <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 font-semibold px-2.5 py-1 rounded-full text-xs">
+                                    ⚠ Replay
+                                </span>
+                            {% else %}
+                                <span class="bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300 font-semibold px-2.5 py-1 rounded-full text-xs">
+                                    Pending Open
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ url_for('reports.view_report', version_id=entry.report_version_id) }}" class="text-teal-600 dark:text-teal-400 hover:underline font-medium text-xs">
+                                Decrypt & Verify &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                            No incoming encrypted clinical reports found in this terminal.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

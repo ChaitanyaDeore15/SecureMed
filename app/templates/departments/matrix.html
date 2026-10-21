@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Access Matrix - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Inter-Department Access Matrix</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Cryptographic routing control: Define which departments can exchange reports</p>
+        </div>
+        <a href="{{ url_for('departments.index') }}" class="text-xs text-teal-600 dark:text-teal-400 hover:underline">
+            &larr; Back to Departments
+        </a>
+    </div>
+
+    <!-- Configure Form -->
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-200 dark:border-slate-700">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Set Inter-Department Permission Rule</h3>
+        <form method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            {{ form.hidden_tag() }}
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Source Department</label>
+                {{ form.source_dept_id(class="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 text-sm") }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Department</label>
+                {{ form.target_dept_id(class="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 text-sm") }}
+            </div>
+            <div class="flex items-center space-x-2 pb-2">
+                {{ form.is_allowed(class="h-4 w-4 text-teal-600 rounded") }}
+                <label class="text-xs font-medium text-slate-700 dark:text-slate-300">Allow Transfer</label>
+            </div>
+            <div>
+                {{ form.submit(class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow text-sm cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+
+    <!-- Current Policy Table -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3 text-left">Originating Department</th>
+                    <th class="px-6 py-3 text-left">Destination Department</th>
+                    <th class="px-6 py-3 text-left">Transfer Permitted</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                {% for rule in rules %}
+                    <tr>
+                        <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">
+                            {{ rule.source_dept_id }}
+                        </td>
+                        <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">
+                            {{ rule.target_dept_id }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if rule.is_allowed %}
+                                <span class="bg-teal-100 text-teal-800 text-xs px-2.5 py-1 rounded-full font-semibold">Allowed</span>
+                            {% else %}
+                                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-1 rounded-full font-semibold">Blocked</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-6 text-center text-slate-400">
+                            No custom matrix rules configured yet. Default policy: intra & inter-department allowed.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Cryptographic Audit Ledger - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Cryptographic Audit Ledger</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Tamper-evident, hash-chained activity log (H_i = SHA-256(H_i-1 || Entry))</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{{ url_for('audit.anomalies') }}" class="bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 font-medium py-2 px-4 rounded-lg text-sm hover:bg-amber-200 transition">
+                Security Alerts
+            </a>
+            <form method="POST" action="{{ url_for('audit.verify_chain') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow text-sm transition cursor-pointer">
+                    🛡️ Verify Chain Integrity
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Filter by Action -->
+    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center space-x-4 text-xs">
+        <span class="font-bold uppercase tracking-wider text-slate-400">Filter Event:</span>
+        <a href="{{ url_for('audit.logs') }}" class="px-3 py-1 rounded-md {% if not current_filter %}bg-teal-100 text-teal-800 font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">All</a>
+        {% for act in distinct_actions %}
+            <a href="{{ url_for('audit.logs', action=act) }}" class="px-3 py-1 rounded-md {% if current_filter == act %}bg-teal-100 text-teal-800 font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                {{ act }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden text-xs">
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead class="bg-slate-50 dark:bg-slate-900 font-semibold uppercase text-slate-500">
+                <tr>
+                    <th class="px-4 py-3 text-left">Seq #</th>
+                    <th class="px-4 py-3 text-left">Timestamp (UTC)</th>
+                    <th class="px-4 py-3 text-left">Actor</th>
+                    <th class="px-4 py-3 text-left">Action</th>
+                    <th class="px-4 py-3 text-left">Target</th>
+                    <th class="px-4 py-3 text-left">Previous Hash</th>
+                    <th class="px-4 py-3 text-left">Current Hash</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700 font-mono">
+                {% for log in pagination.items %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-750">
+                        <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">{{ log.sequence_number }}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 font-sans">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 font-sans">{{ log.actor.full_name if log.actor else 'System' }}</td>
+                        <td class="px-4 py-3 font-sans">
+                            <span class="px-2 py-0.5 rounded text-2xs font-bold {% if 'FAIL' in log.action or 'LOCKED' in log.action %}bg-red-100 text-red-800{% elif 'BREAK_GLASS' in log.action %}bg-amber-100 text-amber-800{% else %}bg-teal-50 text-teal-800{% endif %}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 font-sans">{{ log.target_resource or '-' }}</td>
+                        <td class="px-4 py-3 text-slate-400" title="{{ log.prev_hash }}">{{ log.prev_hash[:10] }}...</td>
+                        <td class="px-4 py-3 text-teal-600 dark:text-teal-400 font-semibold" title="{{ log.curr_hash }}">{{ log.curr_hash[:10] }}...</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-slate-400 font-sans">
+                            No audit records found in the ledger.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Security & Anomaly Alerts - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Security & Anomaly Telemetry</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Automated intrusion detection, verification tamper events, and emergency overrides</p>
+        </div>
+        <a href="{{ url_for('audit.logs') }}" class="text-xs text-teal-600 dark:text-teal-400 hover:underline">
+            &larr; Back to Audit Ledger
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for alert in alerts %}
+            <div class="p-6 rounded-xl border shadow-sm {% if alert.type == 'CRITICAL' %}bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900{% elif alert.type == 'HIGH' %}bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900{% else %}bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900{% endif %}">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-xl">
+                            {% if alert.type == 'CRITICAL' %}🚨{% elif alert.type == 'HIGH' %}⚠️{% else %}ℹ️{% endif %}
+                        </span>
+                        <div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded uppercase {% if alert.type == 'CRITICAL' %}bg-red-600 text-white{% elif alert.type == 'HIGH' %}bg-amber-600 text-white{% else %}bg-blue-600 text-white{% endif %}">
+                                {{ alert.type }}
+                            </span>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white mt-1">{{ alert.title }}</h3>
+                        </div>
+                    </div>
+                    <span class="text-xs text-slate-500 font-mono">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                </div>
+                <p class="text-xs text-slate-700 dark:text-slate-300 mt-3 font-sans">{{ alert.details }}</p>
+            </div>
+        {% else %}
+            <div class="p-12 text-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400">
+                <p class="text-sm">✓ No security anomalies or intrusion alerts active. System baseline normal.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

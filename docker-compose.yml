@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  securemed:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=securemed-super-secret-key-cns-project
+      - CRYPTO_POLICY_ALGORITHM=RSA
+      - AES_KEY_SIZE=256
+    volumes:
+      - ./instance:/app/instance
+    restart: unless-stopped

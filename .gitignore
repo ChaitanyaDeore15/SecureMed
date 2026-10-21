@@ -1,0 +1,29 @@
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Instance runtime storage (do not commit runtime SQLite db, keys, uploaded bin files)
+instance/*.db
+instance/*.sqlite3
+instance/uploads/
+instance/ca/
+instance/certs/
+!instance/pccoe_logo_clean.png
+!instance/pccoe_logo.png
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp

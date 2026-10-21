@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Cryptographic Security Lab - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{
+    labResult: null,
+    loading: false,
+    async runAttack(endpoint) {
+        this.loading = true;
+        this.labResult = null;
+        try {
+            const resp = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            });
+            this.labResult = await resp.json();
+        } catch (e) {
+            this.labResult = { attack: 'Error', defense: 'Network Failure', result: e.message, status: 'ERROR' };
+        }
+        this.loading = false;
+    }
+}">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">CNS Interactive Security Lab</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Live cryptographic exploit demonstrations & defensive verification evaluations</p>
+        </div>
+        <span class="bg-teal-100 text-teal-800 text-xs px-3 py-1 rounded-full font-bold">CNS Evaluation Mode</span>
+    </div>
+
+    <!-- Attack Selector Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Attack 1: Tampering -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+            <div>
+                <span class="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Integrity Attack</span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mt-2">Ciphertext Bit Flipping</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Attacker intercepts the encrypted payload and alters 1 bit in transit before it reaches the recipient.
+                </p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <button @click="runAttack('{{ url_for('demo.simulate_tamper') }}')" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded-lg text-xs shadow transition cursor-pointer">
+                    Simulate Tampering Attack &rarr;
+                </button>
+            </div>
+        </div>
+
+        <!-- Attack 2: Forgery -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+            <div>
+                <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">Authenticity Attack</span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mt-2">Sender Forgery (Impersonation)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Attacker Eve creates an unauthorized medical prescription signed with her own key, claiming to be Dr. Alice.
+                </p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <button @click="runAttack('{{ url_for('demo.simulate_forge') }}')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 rounded-lg text-xs shadow transition cursor-pointer">
+                    Simulate Forged Sender Attack &rarr;
+                </button>
+            </div>
+        </div>
+
+        <!-- Attack 3: Replay -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+            <div>
+                <span class="text-xs bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Freshness Attack</span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mt-2">Replay of Valid Ciphertext</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Attacker sniffs a valid encrypted report from the network and retransmits it to duplicate clinical actions.
+                </p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <button @click="runAttack('{{ url_for('demo.simulate_replay') }}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-xs shadow transition cursor-pointer">
+                    Simulate Replay Attack &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Execution & Results Panel -->
+    <div x-show="loading" class="p-8 text-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+        <p class="text-sm font-semibold text-teal-600 animate-pulse">Running live cryptographic exploit simulation and testing defense mechanisms...</p>
+    </div>
+
+    <div x-show="labResult" class="bg-white dark:bg-slate-800 p-6 rounded-xl border-2 border-teal-500 shadow-lg space-y-4">
+        <div class="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                <span>🛡️ Attack &rarr; Defense &rarr; Result Evaluation</span>
+            </h3>
+            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-teal-600 text-white" x-text="labResult ? labResult.status : ''"></span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 bg-red-50 dark:bg-red-950/40 rounded-lg border border-red-200 dark:border-red-900">
+                <span class="font-bold text-red-800 dark:text-red-300 block mb-1">1. Attack Vector</span>
+                <p class="text-slate-700 dark:text-slate-300" x-text="labResult ? labResult.attack : ''"></p>
+            </div>
+
+            <div class="p-4 bg-teal-50 dark:bg-teal-950/40 rounded-lg border border-teal-200 dark:border-teal-900">
+                <span class="font-bold text-teal-800 dark:text-teal-300 block mb-1">2. Cryptographic Defense</span>
+                <p class="text-slate-700 dark:text-slate-300" x-text="labResult ? labResult.defense : ''"></p>
+            </div>
+
+            <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span class="font-bold text-slate-800 dark:text-slate-200 block mb-1">3. System Outcome</span>
+                <p class="font-semibold text-slate-900 dark:text-white" x-text="labResult ? labResult.result : ''"></p>
+                <p class="text-2xs text-slate-400 mt-1" x-text="labResult ? labResult.detail : ''"></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

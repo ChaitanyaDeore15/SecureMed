@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Health Portal - SecureMed{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Patient Clinical Portal</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Record: {{ patient.full_name }} &bull; MRN: <span class="font-mono font-semibold">{{ patient.mrn }}</span></p>
+        </div>
+        <a href="{{ url_for('patients.edit_consent') }}" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow text-sm transition">
+            + Manage Clinical Consent
+        </a>
+    </div>
+
+    <!-- Active Consents Matrix -->
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-200 dark:border-slate-700">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white mb-3">Your Clinical Consent Directives</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for c in consents %}
+                <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                    <p class="font-semibold text-slate-900 dark:text-white">
+                        {% if c.department_id %}Department: {{ c.department_id }}{% elif c.doctor_id %}Clinician: Dr. #{{ c.doctor_id }}{% else %}Global{% endif %}
+                    </p>
+                    <p class="mt-1">
+                        Status: 
+                        {% if c.can_view %}
+                            <span class="text-teal-600 font-bold">Access Authorized</span>
+                        {% else %}
+                            <span class="text-red-500 font-bold">Access Revoked</span>
+                        {% endif %}
+                    </p>
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 col-span-3">Standard clinical consent applies to attending hospital departments.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Your Encrypted Clinical Reports</h3>
+        </div>
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3 text-left">Report Title</th>
+                    <th class="px-6 py-3 text-left">Department</th>
+                    <th class="px-6 py-3 text-left">Author</th>
+                    <th class="px-6 py-3 text-left">Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                {% for rpt in reports %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-750">
+                        <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ rpt.title }}</td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ rpt.department.name }}</td>
+                        <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ rpt.author.full_name if rpt.author else 'Hospital' }}</td>
+                        <td class="px-6 py-4 text-slate-500 text-xs">{{ rpt.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-slate-400 text-xs">
+                            No medical reports issued for this patient record yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Who Viewed My Data -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Transparency Ledger: "Who Viewed My Data"</h3>
+            <p class="text-xs text-slate-500">Immutable audit log of all clinical and administrative accesses to your health information</p>
+        </div>
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs">
+            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 uppercase text-2xs">
+                <tr>
+                    <th class="px-4 py-2.5 text-left">Timestamp (UTC)</th>
+                    <th class="px-4 py-2.5 text-left">Clinician / Actor</th>
+                    <th class="px-4 py-2.5 text-left">Action</th>
+                    <th class="px-4 py-2.5 text-left">Cryptographic Current Hash</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700 font-mono">
+                {% for log in access_logs %}
+                    <tr>
+                        <td class="px-4 py-3 font-sans">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td class="px-4 py-3 font-sans">{{ log.actor.full_name if log.actor else 'Staff' }}</td>
+                        <td class="px-4 py-3 font-sans font-semibold text-teal-600">{{ log.action }}</td>
+                        <td class="px-4 py-3 text-slate-400">{{ log.curr_hash[:16] }}...</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-6 text-center text-slate-400 font-sans">
+                            No recent accesses recorded.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
